@@ -1,77 +1,107 @@
+<div align="center">
+
 # ai2-calculator-perceptron
 
-A from-scratch Python calculator that trains separate single-neuron models for addition and subtraction using gradient descent. Includes training and testing scripts, along with saved model files for each operation.
+**A neural network that learns arithmetic from scratch.**
+*No libraries. No shortcuts. Just math.*
+
+![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=flat-square&logo=python&logoColor=white)
+![ML](https://img.shields.io/badge/Type-Single--Layer%20Perceptron-FF6B35?style=flat-square)
+![Libraries](https://img.shields.io/badge/External%20Libraries-None-22C55E?style=flat-square)
+
+</div>
 
 ---
 
-## What the Model Is
+## The Model
 
-This project uses a **single-layer perceptron** — the simplest possible neural network. Instead of hard-coding `a + b` or `a - b`, two separate models are trained from scratch to learn what addition and subtraction mean purely from examples.
+This project trains two **single-layer perceptrons** — one for addition, one for subtraction — purely from examples. No formula is hard-coded. The model figures out the math on its own.
 
-Each model is just **three numbers**: `weight_1`, `weight_2`, and `bias`. The model learns these values through thousands of training examples.
+Each model is exactly **three learned numbers:**
+
+| Parameter | Role |
+|-----------|------|
+| `weight_1` | How much input 1 influences the output |
+| `weight_2` | How much input 2 influences the output |
+| `bias` | A constant offset to fine-tune predictions |
 
 ---
 
 ## The Core Formula
 
-Every prediction is computed as:
+Every prediction is a single line of math:
 
 ```
 output = (input_1 × weight_1) + (input_2 × weight_2) + bias
 ```
 
-This is a **single neuron**. Training finds the correct values for `weight_1`, `weight_2`, and `bias` so this formula produces the right answer.
+> This is one neuron. That's the entire model.
 
 ---
 
 ## Normalization
 
-Raw numbers (up to 100,000) are scaled down to the `[0, 1]` range before being fed to the model:
+Numbers up to `100,000` are scaled to the `[0.0 → 1.0]` range before training:
 
 ```python
-normalized = x / 100000
+normalized = x / 100_000   # scale down  →  feed to model
+output     = result * 100_000   # scale back up  →  real answer
 ```
 
-This keeps the math stable during training. After the model predicts, the result is scaled back up.
+This prevents large numbers from destabilizing the weight updates during training.
 
 ---
 
 ## How Training Works
 
-1. A random example is generated (e.g. `30000 + 45000 = 75000`)
-2. The model makes a prediction using the current weights
-3. The **error** is calculated: `error = target - prediction`
-4. Weights are nudged in the direction that reduces the error:
+```
+┌─────────────────────────────────────────────────────┐
+│                  TRAINING LOOP                      │
+│                                                     │
+│  1. Generate random example  →  e.g. 30000 + 45000  │
+│  2. Model predicts           →  weighted sum        │
+│  3. Calculate error          →  target − prediction │
+│  4. Nudge weights            →  gradient descent    │
+│  5. Repeat 1000×             →  one epoch           │
+│  6. Stop when loss ≈ 0       →  converged ✓         │
+└─────────────────────────────────────────────────────┘
+```
+
+The weight update rule (gradient descent):
+
 ```
 weight_1 += learning_rate × error × input_1
 weight_2 += learning_rate × error × input_2
 bias     += learning_rate × error
 ```
-5. This repeats for 1,000 examples per epoch until loss reaches near zero
-
-This technique is called **gradient descent**.
 
 ---
 
-## What the Model Learns
+## What the Model Discovers
 
-For **addition**, the weights converge toward:
-- `weight_1 ≈ 1.0`
-- `weight_2 ≈ 1.0`
-- `bias ≈ 0.0`
+The model starts with random weights and converges to these on its own:
 
-Because `(x1 × 1.0) + (x2 × 1.0) + 0 = x1 + x2` — exactly addition.
+**Addition model**
+```
+weight_1 ≈  1.0
+weight_2 ≈  1.0
+bias     ≈  0.0
+```
+> Because `(x1 × 1) + (x2 × 1) + 0 = x1 + x2` ✓
 
-For **subtraction**:
-- `weight_1 ≈ 1.0`
-- `weight_2 ≈ -1.0`
-- `bias ≈ 0.0`
+**Subtraction model**
+```
+weight_1 ≈  1.0
+weight_2 ≈ -1.0
+bias     ≈  0.0
+```
+> Because `(x1 × 1) + (x2 × -1) + 0 = x1 - x2` ✓
 
-The model discovers this entirely on its own through training — it is never told what the weights should be.
+The model is **never told** what these values should be. It learns them entirely through training.
 
 ---
 
 ## Requirements
 
 - Python 3.x
-- No external libraries — only the standard library (`random`, `pickle`, `os`, `sys`)
+- Zero external libraries — only `random` `pickle` `os` `sys`
